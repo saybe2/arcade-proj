@@ -5,9 +5,9 @@ from game.states.base import BaseView
 
 
 class LevelSelectView(BaseView):
-    def on_draw(self):
-        self.clear()
-        arcade.draw_text(
+    def __init__(self, state_manager):
+        super().__init__(state_manager)
+        self._title_text = arcade.Text(
             "Select Level",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 + 80,
@@ -15,7 +15,7 @@ class LevelSelectView(BaseView):
             36,
             anchor_x="center",
         )
-        arcade.draw_text(
+        self._level_one_text = arcade.Text(
             "1 - Easy",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 + 20,
@@ -23,7 +23,7 @@ class LevelSelectView(BaseView):
             20,
             anchor_x="center",
         )
-        arcade.draw_text(
+        self._level_two_text = arcade.Text(
             "2 - Medium",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 10,
@@ -31,7 +31,7 @@ class LevelSelectView(BaseView):
             20,
             anchor_x="center",
         )
-        arcade.draw_text(
+        self._level_three_text = arcade.Text(
             "3 - Hard",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 40,
@@ -39,7 +39,7 @@ class LevelSelectView(BaseView):
             20,
             anchor_x="center",
         )
-        arcade.draw_text(
+        self._back_text = arcade.Text(
             "ESC - Back",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 90,
@@ -47,6 +47,14 @@ class LevelSelectView(BaseView):
             16,
             anchor_x="center",
         )
+
+    def on_draw(self):
+        self.clear()
+        self._title_text.draw()
+        self._level_one_text.draw()
+        self._level_two_text.draw()
+        self._level_three_text.draw()
+        self._back_text.draw()
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.KEY_1:

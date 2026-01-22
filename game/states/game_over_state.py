@@ -8,11 +8,8 @@ class GameOverView(BaseView):
     def __init__(self, state_manager, won: bool):
         super().__init__(state_manager)
         self.won = won
-
-    def on_draw(self):
-        self.clear()
         title = "Level Complete" if self.won else "Game Over"
-        arcade.draw_text(
+        self._title_text = arcade.Text(
             title,
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 + 40,
@@ -20,7 +17,7 @@ class GameOverView(BaseView):
             36,
             anchor_x="center",
         )
-        arcade.draw_text(
+        self._menu_text = arcade.Text(
             "Press ENTER for menu",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2,
@@ -28,6 +25,11 @@ class GameOverView(BaseView):
             18,
             anchor_x="center",
         )
+
+    def on_draw(self):
+        self.clear()
+        self._title_text.draw()
+        self._menu_text.draw()
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ENTER:

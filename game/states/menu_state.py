@@ -5,9 +5,9 @@ from game.states.base import BaseView
 
 
 class MenuView(BaseView):
-    def on_draw(self):
-        self.clear()
-        arcade.draw_text(
+    def __init__(self, state_manager):
+        super().__init__(state_manager)
+        self._title_text = arcade.Text(
             SCREEN_TITLE,
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 + 80,
@@ -15,7 +15,7 @@ class MenuView(BaseView):
             48,
             anchor_x="center",
         )
-        arcade.draw_text(
+        self._start_text = arcade.Text(
             "Press ENTER to start",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2,
@@ -23,7 +23,7 @@ class MenuView(BaseView):
             20,
             anchor_x="center",
         )
-        arcade.draw_text(
+        self._exit_text = arcade.Text(
             "Press ESC to quit",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 30,
@@ -31,6 +31,12 @@ class MenuView(BaseView):
             16,
             anchor_x="center",
         )
+
+    def on_draw(self):
+        self.clear()
+        self._title_text.draw()
+        self._start_text.draw()
+        self._exit_text.draw()
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ENTER:
