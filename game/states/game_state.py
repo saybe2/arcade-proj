@@ -21,7 +21,11 @@ class GameView(BaseView):
 
         self.player = None
         self.physics_engine = None
-        self.camera = CameraManager(SCREEN_WIDTH, SCREEN_HEIGHT)
+        self.camera = CameraManager(
+            SCREEN_WIDTH,
+            SCREEN_HEIGHT,
+            window=state_manager.window,
+        )
         self.hud = HUD()
 
         self.score = 0
