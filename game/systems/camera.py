@@ -2,11 +2,16 @@ import arcade
 
 from game.config import CAMERA_PAN_SPEED
 
+try:
+    CameraClass = arcade.Camera
+except AttributeError:
+    from arcade.camera import Camera as CameraClass
+
 
 class CameraManager:
     def __init__(self, width: int, height: int, pan_speed: float = CAMERA_PAN_SPEED):
-        self.world_camera = arcade.Camera(width, height)
-        self.hud_camera = arcade.Camera(width, height)
+        self.world_camera = CameraClass(width, height)
+        self.hud_camera = CameraClass(width, height)
         self.pan_speed = pan_speed
 
     def use_world(self):
