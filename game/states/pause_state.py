@@ -38,11 +38,11 @@ class PauseView(BaseView):
         if self.game_view:
             self.game_view.on_draw()
 
-        arcade.draw_lrtb_rectangle_filled(
+        arcade.draw_lrbt_rectangle_filled(
             0,
-            SCREEN_WIDTH,
             SCREEN_HEIGHT,
             0,
+            SCREEN_WIDTH,
             (0, 0, 0, 180),
         )
         self._title_text.draw()
