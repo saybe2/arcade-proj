@@ -5,3 +5,4 @@ __pycache__/
 *.mp3
 Points.txt
 .venv/
+data/*.json
