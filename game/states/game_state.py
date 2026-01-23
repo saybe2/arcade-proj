@@ -12,6 +12,7 @@ from game.config import (
 from game.entities.coin import Coin
 from game.entities.hazard import Hazard
 from game.entities.platform import Platform
+from game.entities.enemy import JumpingEnemy, PatrolEnemy
 from game.entities.player import Player
 from game.states.base import BaseView
 from game.systems.camera import CameraManager
@@ -32,6 +33,7 @@ class GameView(BaseView):
 
         self.player = None
         self.physics_engine = None
+        self.enemy_physics_engines = []
         self.camera = CameraManager(
             SCREEN_WIDTH,
             SCREEN_HEIGHT,
@@ -127,6 +129,23 @@ class GameView(BaseView):
             spikes.color = arcade.color.RED
             spikes.alpha = 255
 
+        self.enemy_physics_engines.clear()
+        patrol = PatrolEnemy(left_bound=260, right_bound=440, speed=2.0)
+        patrol.center_x = 300
+        patrol.center_y = 180
+        self.enemy_list.append(patrol)
+        self.enemy_physics_engines.append(
+            arcade.PhysicsEnginePlatformer(patrol, self.platform_list, gravity_constant=GRAVITY)
+        )
+
+        jumper = JumpingEnemy(jump_interval_min=1.0, jump_interval_max=2.0, jump_strength=12.0)
+        jumper.center_x = 980
+        jumper.center_y = 260
+        self.enemy_list.append(jumper)
+        self.enemy_physics_engines.append(
+            arcade.PhysicsEnginePlatformer(jumper, self.platform_list, gravity_constant=GRAVITY)
+        )
+
         goal_platform = Platform(80, 24, color=arcade.color.LIME_GREEN)
         goal_platform.center_x = 2100
         goal_platform.center_y = 140
@@ -186,6 +205,9 @@ class GameView(BaseView):
                     self._jump_active = False
                     self._jump_frames = PLAYER_JUMP_HOLD_FRAMES
             self.physics_engine.update()
+
+            for engine in self.enemy_physics_engines:
+                engine.update()
         else:
             self.player_list.update()
 
@@ -198,8 +220,15 @@ class GameView(BaseView):
             self._handle_death()
             return
 
+        if arcade.check_for_collision_with_list(self.player, self.enemy_list):
+            self._handle_death()
+            return
+
         if self.level_end_x and self.player.center_x >= self.level_end_x:
             self.state_manager.set_last_score(self.score)
+            self.state_manager.update_progress(
+                self.level_id, self.score, True, self.time_elapsed
+            )
             self.state_manager.show_game_over(True)
             return
 
@@ -214,6 +243,9 @@ class GameView(BaseView):
         self.hud.lives = self.lives
         if self.lives <= 0:
             self.state_manager.set_last_score(self.score)
+            self.state_manager.update_progress(
+                self.level_id, self.score, False, self.time_elapsed
+            )
             self.state_manager.show_game_over(False)
             return
         self._respawn_player()

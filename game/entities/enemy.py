@@ -19,11 +19,11 @@ class Enemy(arcade.Sprite):
 
 
 class PatrolEnemy(Enemy):
-    def __init__(self, left_bound: float, right_bound: float):
+    def __init__(self, left_bound: float, right_bound: float, speed: float = 2.0):
         super().__init__(arcade.color.ORANGE_RED)
         self.left_bound = left_bound
         self.right_bound = right_bound
-        self.change_x = 150
+        self.change_x = speed
 
     def update_ai(self, delta_time: float):
         if self.center_x <= self.left_bound or self.center_x >= self.right_bound:
@@ -31,21 +31,27 @@ class PatrolEnemy(Enemy):
 
 
 class JumpingEnemy(Enemy):
-    def __init__(self, jump_interval_min: float = 1.0, jump_interval_max: float = 2.0):
+    def __init__(
+        self,
+        jump_interval_min: float = 1.0,
+        jump_interval_max: float = 2.0,
+        jump_strength: float = 12.0,
+    ):
         super().__init__(arcade.color.PURPLE)
         self.jump_interval_min = jump_interval_min
         self.jump_interval_max = jump_interval_max
+        self.jump_strength = jump_strength
         self.time_to_jump = random.uniform(jump_interval_min, jump_interval_max)
 
     def update_ai(self, delta_time: float):
         self.time_to_jump -= delta_time
         if self.time_to_jump <= 0:
-            self.change_y = 250
+            self.change_y = self.jump_strength
             self.time_to_jump = random.uniform(self.jump_interval_min, self.jump_interval_max)
 
 
 class FlyingEnemy(Enemy):
-    def __init__(self, amplitude: float = 40.0, speed: float = 200.0):
+    def __init__(self, amplitude: float = 40.0, speed: float = 2.5):
         super().__init__(arcade.color.AIR_FORCE_BLUE)
         self.amplitude = amplitude
         self.speed = speed

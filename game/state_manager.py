@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Optional
+
+from game.systems.data import DataManager
 
 
 class StateManager:
@@ -9,6 +12,8 @@ class StateManager:
         self.current_level = 1
         self.last_score = 0
         self._game_view = None
+        self.data_manager = DataManager()
+        self.data = self.data_manager.load()
 
     def show_menu(self):
         from game.states.menu_state import MenuView
@@ -46,6 +51,23 @@ class StateManager:
 
     def set_last_score(self, score: int):
         self.last_score = score
+
+    def update_progress(self, level_id: int, score: int, won: bool, time_elapsed: float):
+        level_key = f"level_{level_id}"
+        high_scores = self.data.setdefault("high_scores", {})
+        current_best = high_scores.get(level_key, 0)
+        if score > current_best:
+            high_scores[level_key] = score
+
+        if won:
+            levels_completed = self.data.setdefault("levels_completed", [])
+            if level_id not in levels_completed:
+                levels_completed.append(level_id)
+
+        total_playtime = self.data.get("total_playtime", 0)
+        self.data["total_playtime"] = total_playtime + int(time_elapsed)
+        self.data["last_played"] = datetime.now().isoformat(timespec="seconds")
+        self.data_manager.save()
 
     def get_game_view(self) -> Optional[object]:
         return self._game_view
