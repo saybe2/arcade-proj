@@ -3,6 +3,8 @@ import arcade
 from game.config import (
     GRAVITY,
     PLAYER_JUMP_SPEED,
+    PLAYER_JUMP_HOLD_FORCE,
+    PLAYER_JUMP_HOLD_FRAMES,
     PLAYER_MOVE_SPEED,
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
@@ -40,9 +42,14 @@ class GameView(BaseView):
         self.score = 0
         self.time_elapsed = 0.0
         self.level_end_x = 0
+        self.lives = 3
+        self.spawn_point = (100, 150)
         self._move_left = False
         self._move_right = False
-        self._jump_requested = False
+        self._jump_pressed = False
+        self._jump_held = False
+        self._jump_active = False
+        self._jump_frames = 0
 
     def setup(self):
         self.player_list.clear()
@@ -58,9 +65,14 @@ class GameView(BaseView):
         self.score = 0
         self.time_elapsed = 0.0
         self.level_end_x = 0
+        self.lives = 3
+        self.spawn_point = (100, 150)
         self._move_left = False
         self._move_right = False
-        self._jump_requested = False
+        self._jump_pressed = False
+        self._jump_held = False
+        self._jump_active = False
+        self._jump_frames = 0
 
         if self.level_id == 1:
             self._setup_level_one()
@@ -68,8 +80,8 @@ class GameView(BaseView):
             self.physics_engine = None
 
     def _setup_level_one(self):
-        self.player.center_x = 100
-        self.player.center_y = 150
+        self.spawn_point = (100, 150)
+        self._respawn_player()
 
         ground = Platform(2400, 40, color=arcade.color.DARK_SLATE_GRAY)
         ground.center_x = 1200
@@ -126,6 +138,12 @@ class GameView(BaseView):
         self.physics_engine = arcade.PhysicsEnginePlatformer(
             self.player, self.platform_list, gravity_constant=GRAVITY
         )
+        self.hud.lives = self.lives
+
+    def _respawn_player(self):
+        self.player.center_x, self.player.center_y = self.spawn_point
+        self.player.change_x = 0
+        self.player.change_y = 0
 
     def on_show_view(self):
         super().on_show_view()
@@ -150,12 +168,23 @@ class GameView(BaseView):
         self.enemy_list.update()
         if self.physics_engine:
             direction = (-1 if self._move_left else 0) + (1 if self._move_right else 0)
-            self.player.change_x = direction * PLAYER_MOVE_SPEED * delta_time
-            if self._jump_requested and self.physics_engine.can_jump():
-                self.player.change_y = PLAYER_JUMP_SPEED * delta_time
-                self._jump_requested = False
-            if hasattr(self.physics_engine, "gravity_constant"):
-                self.physics_engine.gravity_constant = GRAVITY * delta_time
+            self.player.change_x = direction * PLAYER_MOVE_SPEED
+            if self._jump_pressed and self.physics_engine.can_jump():
+                self.player.change_y = PLAYER_JUMP_SPEED
+                self._jump_frames = 0
+                self._jump_active = True
+            self._jump_pressed = False
+
+            if self._jump_active:
+                if self._jump_held and self._jump_frames < PLAYER_JUMP_HOLD_FRAMES:
+                    self.player.change_y += PLAYER_JUMP_HOLD_FORCE
+                    self._jump_frames += 1
+                    if self._jump_frames >= PLAYER_JUMP_HOLD_FRAMES:
+                        self._jump_active = False
+                elif not self._jump_held and self.player.change_y > 0:
+                    self.player.change_y *= 0.6
+                    self._jump_active = False
+                    self._jump_frames = PLAYER_JUMP_HOLD_FRAMES
             self.physics_engine.update()
         else:
             self.player_list.update()
@@ -166,8 +195,7 @@ class GameView(BaseView):
             self.score += getattr(coin, "value", 0)
 
         if arcade.check_for_collision_with_list(self.player, self.hazard_list):
-            self.state_manager.set_last_score(self.score)
-            self.state_manager.show_game_over(False)
+            self._handle_death()
             return
 
         if self.level_end_x and self.player.center_x >= self.level_end_x:
@@ -176,19 +204,28 @@ class GameView(BaseView):
             return
 
         if self.player.center_y < -200:
-            self.state_manager.set_last_score(self.score)
-            self.state_manager.show_game_over(False)
+            self._handle_death()
             return
 
         self.camera.update(self.player)
+
+    def _handle_death(self):
+        self.lives -= 1
+        self.hud.lives = self.lives
+        if self.lives <= 0:
+            self.state_manager.set_last_score(self.score)
+            self.state_manager.show_game_over(False)
+            return
+        self._respawn_player()
 
     def on_key_press(self, key, modifiers):
         if key in (arcade.key.LEFT, arcade.key.A):
             self._move_left = True
         elif key in (arcade.key.RIGHT, arcade.key.D):
             self._move_right = True
-        elif key == arcade.key.SPACE:
-            self._jump_requested = True
+        elif key in (arcade.key.SPACE, arcade.key.W, arcade.key.UP):
+            self._jump_pressed = True
+            self._jump_held = True
         elif key == arcade.key.P:
             self.state_manager.show_pause()
         elif key == arcade.key.ESCAPE:
@@ -199,3 +236,5 @@ class GameView(BaseView):
             self._move_left = False
         elif key in (arcade.key.RIGHT, arcade.key.D):
             self._move_right = False
+        elif key in (arcade.key.SPACE, arcade.key.W, arcade.key.UP):
+            self._jump_held = False
