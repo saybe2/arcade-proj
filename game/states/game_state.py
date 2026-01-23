@@ -71,10 +71,12 @@ class GameView(BaseView):
         self.player.center_x = 100
         self.player.center_y = 150
 
-        ground = Platform(2400, 40)
+        ground = Platform(2400, 40, color=arcade.color.DARK_SLATE_GRAY)
         ground.center_x = 1200
         ground.center_y = 20
         self.platform_list.append(ground)
+        ground.color = arcade.color.DARK_SLATE_GRAY
+        ground.alpha = 255
 
         platform_positions = [
             (300, 140),
@@ -86,11 +88,18 @@ class GameView(BaseView):
             (1700, 200),
         ]
 
-        for x, y in platform_positions:
-            platform = Platform(120, 24)
+        platform_colors = [
+            arcade.color.LIGHT_SLATE_GRAY,
+            arcade.color.COOL_GREY,
+        ]
+
+        for index, (x, y) in enumerate(platform_positions):
+            platform = Platform(120, 24, color=platform_colors[index % 2])
             platform.center_x = x
             platform.center_y = y
             self.platform_list.append(platform)
+            platform.color = platform_colors[index % 2]
+            platform.alpha = 255
 
         for x, y in [(300, 180), (520, 260), (760, 340), (980, 260), (1450, 300)]:
             coin = Coin()
@@ -103,6 +112,15 @@ class GameView(BaseView):
             spikes.center_x = x
             spikes.center_y = y
             self.hazard_list.append(spikes)
+            spikes.color = arcade.color.RED
+            spikes.alpha = 255
+
+        goal_platform = Platform(80, 24, color=arcade.color.LIME_GREEN)
+        goal_platform.center_x = 2100
+        goal_platform.center_y = 140
+        self.platform_list.append(goal_platform)
+        goal_platform.color = arcade.color.LIME_GREEN
+        goal_platform.alpha = 255
 
         self.level_end_x = 2100
         self.physics_engine = arcade.PhysicsEnginePlatformer(
