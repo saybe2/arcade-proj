@@ -7,14 +7,6 @@ from game.states.base import BaseView
 class MenuView(BaseView):
     def __init__(self, state_manager):
         super().__init__(state_manager)
-        self._title_text = arcade.Text(
-            SCREEN_TITLE,
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 + 80,
-            arcade.color.WHITE,
-            48,
-            anchor_x="center",
-        )
         self._start_text = arcade.Text(
             "Press ENTER to start",
             SCREEN_WIDTH / 2,
@@ -31,10 +23,16 @@ class MenuView(BaseView):
             16,
             anchor_x="center",
         )
+        self.background_texture = arcade.load_texture(
+            "assets/backgrounds/menu_background.jpeg"
+        )
 
     def on_draw(self):
         self.clear()
-        self._title_text.draw()
+        arcade.draw_texture_rect(
+            self.background_texture,
+            arcade.rect.XYWH(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, SCREEN_WIDTH, SCREEN_HEIGHT)
+        )
         self._start_text.draw()
         self._exit_text.draw()
 

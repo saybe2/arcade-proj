@@ -6,7 +6,7 @@ from game.state_manager import StateManager
 
 class PhysicsPlayWindow(arcade.Window):
     def __init__(self):
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, center_window=True)
         self.state_manager = StateManager(self)
 
     def setup(self):
