@@ -1,8 +1,13 @@
 import arcade
 
 
-class Hazard(arcade.Sprite):
-    def __init__(self, damage: int = 1, color=arcade.color.DARK_RED):
-        super().__init__()
-        self.texture = arcade.make_soft_square_texture(24, color, 255, 0)
+class Hazard(arcade.SpriteSolidColor):
+    def __init__(
+        self,
+        width: int = 24,
+        height: int = 24,
+        damage: int = 1,
+        color=arcade.color.DARK_RED,
+    ):
+        super().__init__(width, height, color)
         self.damage = damage
