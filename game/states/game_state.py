@@ -13,6 +13,7 @@ from game.entities.player import FaceDirection, Player
 from game.levels import LevelBuilder, get_level_specs
 from game.states.base import BaseView
 from game.systems.camera import CameraManager
+from game.systems.particles import ParticleEmitter, ParticleManager
 from game.ui.hud import HUD
 
 
@@ -38,6 +39,7 @@ class GameView(BaseView):
             window=state_manager.window,
         )
         self.hud = HUD()
+        self.particles = ParticleManager()
 
         self.score = 0
         self.time_elapsed = 0.0
@@ -76,6 +78,7 @@ class GameView(BaseView):
         self._jump_active = False
         self._jump_frames = 0
         self._moving_platform_last_pos = {}
+        self.particles.clear()
 
         level_specs = get_level_specs()
         spec = level_specs.get(self.level_id)
@@ -111,6 +114,7 @@ class GameView(BaseView):
         self.hazard_list.draw()
         self.enemy_list.draw()
         self.player_list.draw()
+        self.particles.draw()
 
         self.camera.use_hud()
         self.hud.score = self.score
@@ -119,6 +123,7 @@ class GameView(BaseView):
 
     def on_update(self, delta_time: float):
         self.time_elapsed += delta_time
+        self.particles.update(delta_time)
         self.enemy_list.update()
 
         player_prev_x = self.player.center_x
@@ -189,6 +194,14 @@ class GameView(BaseView):
 
         coins_hit = arcade.check_for_collision_with_list(self.player, self.coin_list)
         for coin in coins_hit:
+            self._spawn_particles(
+                (coin.center_x, coin.center_y),
+                color=arcade.color.GOLD,
+                count=6,
+                speed_range=(40, 120),
+                lifetime_range=(0.25, 0.55),
+                size_range=(3, 6),
+            )
             coin.remove_from_sprite_lists()
             self.score += getattr(coin, "value", 0)
 
@@ -222,6 +235,26 @@ class GameView(BaseView):
         self.player.is_walking = self._move_left or self._move_right
         self.player.update_animation(delta_time)
 
+    def _spawn_particles(
+        self,
+        position,
+        color,
+        count=8,
+        speed_range=(40, 140),
+        lifetime_range=(0.3, 0.7),
+        size_range=(3, 6),
+    ):
+        emitter = ParticleEmitter()
+        emitter.emit_burst(
+            position=position,
+            color=color,
+            count=count,
+            speed_range=speed_range,
+            lifetime_range=lifetime_range,
+            size_range=size_range,
+        )
+        self.particles.emitters.append(emitter)
+
     def _platform_under_player(self):
         if not self.moving_platform_list:
             return None
@@ -248,6 +281,14 @@ class GameView(BaseView):
         return best_platform
 
     def _handle_death(self):
+        self._spawn_particles(
+            (self.player.center_x, self.player.center_y),
+            color=arcade.color.RED,
+            count=14,
+            speed_range=(80, 200),
+            lifetime_range=(0.4, 0.9),
+            size_range=(4, 7),
+        )
         self.lives -= 1
         self.hud.lives = self.lives
         if self.lives <= 0:
