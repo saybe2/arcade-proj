@@ -142,6 +142,7 @@ class GameView(BaseView):
 
         if self._jump_pressed and self.physics_engine and self.physics_engine.can_jump():
             self.player.change_y = PLAYER_JUMP_SPEED
+            self.state_manager.sound.play_sfx("jump")
             self._jump_frames = 0
             self._jump_active = True
         self._jump_pressed = False
@@ -202,6 +203,7 @@ class GameView(BaseView):
                 lifetime_range=(0.25, 0.55),
                 size_range=(3, 6),
             )
+            self.state_manager.sound.play_sfx("coin")
             coin.remove_from_sprite_lists()
             self.score += getattr(coin, "value", 0)
 
@@ -289,6 +291,7 @@ class GameView(BaseView):
             lifetime_range=(0.4, 0.9),
             size_range=(4, 7),
         )
+        self.state_manager.sound.play_sfx("death")
         self.lives -= 1
         self.hud.lives = self.lives
         if self.lives <= 0:

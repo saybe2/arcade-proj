@@ -16,3 +16,10 @@ CAMERA_ZOOM = 1.0
 
 DATA_FILE_PATH = "data/game_data.json"
 ASSETS_PATH = "assets"
+SOUND_PATH = "assets/audio"
+SFX_COIN = "assets/audio/coin.wav"
+SFX_JUMP = "assets/audio/jump.wav"
+SFX_DEATH = "assets/audio/death.wav"
+SFX_UI = "assets/audio/ui.wav"
+MUSIC_MENU = "assets/audio/menu.ogg"
+MUSIC_LEVEL = "assets/audio/level.ogg"
