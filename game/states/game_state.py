@@ -246,11 +246,11 @@ class GameView(BaseView):
             self.score += getattr(coin, "value", 0)
 
         if arcade.check_for_collision_with_list(self.player, self.hazard_list):
-            self._handle_death()
+            self._handle_death(arcade.color.YELLOW)
             return
 
         if arcade.check_for_collision_with_list(self.player, self.enemy_list):
-            self._handle_death()
+            self._handle_death(arcade.color.RED)
             return
 
         if self.level_end_x and self.player.center_x >= self.level_end_x:
@@ -271,7 +271,7 @@ class GameView(BaseView):
                 return
 
         if self.player.center_y < -200:
-            self._handle_death()
+            self._handle_death(arcade.color.ORANGE_RED)
             return
 
         self.camera.update(self.player)
@@ -333,10 +333,10 @@ class GameView(BaseView):
                 best_top = platform.top
         return best_platform
 
-    def _handle_death(self):
+    def _handle_death(self, color=arcade.color.RED):
         self._spawn_particles(
             (self.player.center_x, self.player.center_y),
-            color=arcade.color.RED,
+            color=color,
             count=14,
             speed_range=(80, 200),
             lifetime_range=(0.4, 0.9),

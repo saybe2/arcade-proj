@@ -17,6 +17,12 @@ class DataManager:
             "high_scores": {},
             "total_playtime": 0,
             "last_played": None,
+            "settings": {
+                "music_volume": 0.5,
+                "sfx_volume": 0.5,
+                "music_muted": False,
+                "sfx_muted": False,
+            },
         }
 
     def load(self):

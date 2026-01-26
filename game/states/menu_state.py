@@ -23,6 +23,14 @@ class MenuView(BaseView):
             16,
             anchor_x="center",
         )
+        self._settings_text = arcade.Text(
+            "Press O for settings",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 55,
+            arcade.color.LIGHT_GRAY,
+            16,
+            anchor_x="center",
+        )
         self.background_texture = arcade.load_texture(
             "assets/backgrounds/menu_background.jpeg"
         )
@@ -35,9 +43,12 @@ class MenuView(BaseView):
         )
         self._start_text.draw()
         self._exit_text.draw()
+        self._settings_text.draw()
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ENTER:
             self.state_manager.show_level_select()
+        elif key == arcade.key.O:
+            self.state_manager.show_settings()
         elif key == arcade.key.ESCAPE:
             arcade.close_window()

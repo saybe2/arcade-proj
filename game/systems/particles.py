@@ -18,6 +18,10 @@ class Particle(arcade.SpriteSolidColor):
         lifetime: float,
     ):
         super().__init__(size, size, color)
+        self.base_color = tuple(color[:3]) if len(color) >= 3 else (255, 255, 255)
+        self.color = self.base_color
+        if len(color) >= 4:
+            self.alpha = int(color[3])
         self.center_x = x
         self.center_y = y
         self.velocity = velocity
@@ -32,7 +36,7 @@ class Particle(arcade.SpriteSolidColor):
             self.remove_from_sprite_lists()
             return
         remaining = max(0.0, 1.0 - (self.elapsed / self.lifetime))
-        self.alpha = int(255 * remaining)
+        self.color = (*self.base_color, int(255 * remaining))
 
 
 class ParticleEmitter:

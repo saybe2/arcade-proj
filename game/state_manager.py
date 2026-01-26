@@ -21,6 +21,7 @@ class StateManager:
         self.sound.load_sfx("jump", SFX_JUMP)
         self.sound.load_sfx("death", SFX_DEATH)
         self.sound.load_sfx("ui", SFX_UI)
+        self._load_audio_settings()
         self.sound.play_music(MUSIC_MENU)
 
     def show_menu(self):
@@ -34,6 +35,12 @@ class StateManager:
 
         self.sound.play_sfx("ui")
         self.window.show_view(LevelSelectView(self))
+
+    def show_settings(self):
+        from game.states.settings_state import SettingsView
+
+        self.sound.play_sfx("ui")
+        self.window.show_view(SettingsView(self))
 
     def start_level(self, level_id: int):
         from game.states.game_state import GameView
@@ -86,3 +93,18 @@ class StateManager:
 
     def get_game_view(self) -> Optional[object]:
         return self._game_view
+
+    def _load_audio_settings(self):
+        settings = self.data.setdefault("settings", {})
+        self.sound.set_music_volume(settings.get("music_volume", 0.5))
+        self.sound.set_sfx_volume(settings.get("sfx_volume", 0.5))
+        self.sound.set_music_muted(settings.get("music_muted", False))
+        self.sound.set_sfx_muted(settings.get("sfx_muted", False))
+
+    def save_audio_settings(self):
+        settings = self.data.setdefault("settings", {})
+        settings["music_volume"] = self.sound.music_volume
+        settings["sfx_volume"] = self.sound.sfx_volume
+        settings["music_muted"] = self.sound.music_muted
+        settings["sfx_muted"] = self.sound.sfx_muted
+        self.data_manager.save()

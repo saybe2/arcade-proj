@@ -10,7 +10,10 @@ class SoundManager:
         self.sfx = {}
         self.music = None
         self.music_player = None
-        self.volume = 0.5
+        self.sfx_volume = 0.5
+        self.music_volume = 0.5
+        self.sfx_muted = False
+        self.music_muted = False
 
     def load_sfx(self, key: str, path: str):
         if not Path(path).exists():
@@ -21,14 +24,17 @@ class SoundManager:
     def play_sfx(self, key: str):
         sound = self.sfx.get(key)
         if sound:
-            sound.play(volume=self.volume)
+            volume = 0.0 if self.sfx_muted else self.sfx_volume
+            sound.play(volume=volume)
 
     def play_music(self, path: str):
         if not Path(path).exists():
             return False
         self.stop_music()
         self.music = arcade.Sound(path)
-        self.music_player = self.music.play(volume=self.volume, loop=True)
+        self.music_player = self.music.play(
+            volume=self._music_effective_volume(), loop=True
+        )
         return True
 
     def stop_music(self):
@@ -50,4 +56,24 @@ class SoundManager:
         self.music = None
 
     def set_volume(self, volume: float):
-        self.volume = max(0.0, min(1.0, volume))
+        self.set_sfx_volume(volume)
+        self.set_music_volume(volume)
+
+    def set_sfx_volume(self, volume: float):
+        self.sfx_volume = max(0.0, min(1.0, volume))
+
+    def set_music_volume(self, volume: float):
+        self.music_volume = max(0.0, min(1.0, volume))
+        if self.music_player:
+            self.music_player.volume = self._music_effective_volume()
+
+    def set_sfx_muted(self, muted: bool):
+        self.sfx_muted = bool(muted)
+
+    def set_music_muted(self, muted: bool):
+        self.music_muted = bool(muted)
+        if self.music_player:
+            self.music_player.volume = self._music_effective_volume()
+
+    def _music_effective_volume(self) -> float:
+        return 0.0 if self.music_muted else self.music_volume
