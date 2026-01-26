@@ -80,11 +80,18 @@ class StateManager:
         current_best = high_scores.get(level_key, 0)
         if score > current_best:
             high_scores[level_key] = score
+        last_times = self.data.setdefault("last_times", {})
+        last_times[level_key] = int(time_elapsed)
 
         if won:
             levels_completed = self.data.setdefault("levels_completed", [])
             if level_id not in levels_completed:
                 levels_completed.append(level_id)
+            best_times = self.data.setdefault("best_times", {})
+            current_best_time = best_times.get(level_key)
+            new_time = int(time_elapsed)
+            if current_best_time is None or new_time < current_best_time:
+                best_times[level_key] = new_time
 
         total_playtime = self.data.get("total_playtime", 0)
         self.data["total_playtime"] = total_playtime + int(time_elapsed)

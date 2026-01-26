@@ -15,6 +15,8 @@ class DataManager:
             "player_name": "Player1",
             "levels_completed": [],
             "high_scores": {},
+            "best_times": {},
+            "last_times": {},
             "total_playtime": 0,
             "last_played": None,
             "settings": {
