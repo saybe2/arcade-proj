@@ -53,6 +53,17 @@ class GameView(BaseView):
         self._jump_active = False
         self._jump_frames = 0
         self._moving_platform_last_pos = {}
+        self.level_spec = None
+        self._status_message = ""
+        self._status_timer = 0.0
+        self._status_text = arcade.Text(
+            "",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT - 80,
+            arcade.color.GOLD,
+            16,
+            anchor_x="center",
+        )
 
     def setup(self):
         self.player_list.clear()
@@ -78,6 +89,9 @@ class GameView(BaseView):
         self._jump_active = False
         self._jump_frames = 0
         self._moving_platform_last_pos = {}
+        self.level_spec = None
+        self._status_message = ""
+        self._status_timer = 0.0
         self.particles.clear()
 
         level_specs = get_level_specs()
@@ -85,16 +99,20 @@ class GameView(BaseView):
         if spec is None:
             self.physics_engine = None
             return
+        self.level_spec = spec
 
         builder = LevelBuilder(self)
         builder.build(spec)
 
+        gravity = getattr(spec, "gravity_constant", GRAVITY)
         self.physics_engine = arcade.PhysicsEnginePlatformer(
             self.player,
             platforms=self.moving_platform_list,
             walls=self.platform_list,
-            gravity_constant=GRAVITY,
+            gravity_constant=gravity,
         )
+        if self.level_spec and self.level_spec.requires_all_coins:
+            self._show_status("Collect all coins to finish!", duration=3.0)
 
     def _respawn_player(self):
         self.player.center_x, self.player.center_y = self.spawn_point
@@ -118,13 +136,33 @@ class GameView(BaseView):
 
         self.camera.use_hud()
         self.hud.score = self.score
-        self.hud.time_elapsed = self.time_elapsed
+        if self.level_spec and self.level_spec.time_limit is not None:
+            remaining = max(0.0, self.level_spec.time_limit - self.time_elapsed)
+            self.hud.time_elapsed = remaining
+        else:
+            self.hud.time_elapsed = self.time_elapsed
         self.hud.draw()
+        if self._status_message:
+            self._status_text.text = self._status_message
+            self._status_text.draw()
 
     def on_update(self, delta_time: float):
         self.time_elapsed += delta_time
         self.particles.update(delta_time)
         self.enemy_list.update()
+        if self._status_timer > 0:
+            self._status_timer -= delta_time
+            if self._status_timer <= 0:
+                self._status_timer = 0.0
+                self._status_message = ""
+        if self.level_spec and self.level_spec.time_limit is not None:
+            if self.time_elapsed >= self.level_spec.time_limit:
+                self.state_manager.set_last_score(self.score)
+                self.state_manager.update_progress(
+                    self.level_id, self.score, False, self.time_elapsed
+                )
+                self.state_manager.show_game_over(False)
+                return
 
         player_prev_x = self.player.center_x
         player_prev_y = self.player.center_y
@@ -216,12 +254,21 @@ class GameView(BaseView):
             return
 
         if self.level_end_x and self.player.center_x >= self.level_end_x:
-            self.state_manager.set_last_score(self.score)
-            self.state_manager.update_progress(
-                self.level_id, self.score, True, self.time_elapsed
-            )
-            self.state_manager.show_game_over(True)
-            return
+            if (
+                self.level_spec
+                and self.level_spec.requires_all_coins
+                and len(self.coin_list) > 0
+            ):
+                if self._status_message != "Collect all coins to finish!":
+                    self._show_status("Collect all coins to finish!")
+                    self.state_manager.sound.play_sfx("ui")
+            else:
+                self.state_manager.set_last_score(self.score)
+                self.state_manager.update_progress(
+                    self.level_id, self.score, True, self.time_elapsed
+                )
+                self.state_manager.show_game_over(True)
+                return
 
         if self.player.center_y < -200:
             self._handle_death()
@@ -236,6 +283,10 @@ class GameView(BaseView):
             self.player.face_direction = FaceDirection.RIGHT
         self.player.is_walking = self._move_left or self._move_right
         self.player.update_animation(delta_time)
+
+    def _show_status(self, message: str, duration: float = 2.0):
+        self._status_message = message
+        self._status_timer = max(duration, 0.1)
 
     def _spawn_particles(
         self,
