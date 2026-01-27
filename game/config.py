@@ -11,6 +11,9 @@ PLAYER_MAX_X_SPEED = 20
 PLAYER_JUMP_HOLD_FRAMES = 10
 PLAYER_JUMP_HOLD_FORCE = 1.2
 
+# Distance to check for obstacles above player before allowing jump
+JUMP_BLOCK_CHECK_DISTANCE = 50
+
 CAMERA_PAN_SPEED = 0.1
 CAMERA_ZOOM = 1.0
 

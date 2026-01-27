@@ -2,6 +2,7 @@ import arcade
 
 from game.config import (
     GRAVITY,
+    JUMP_BLOCK_CHECK_DISTANCE,
     PLAYER_JUMP_SPEED,
     PLAYER_JUMP_HOLD_FORCE,
     PLAYER_JUMP_HOLD_FRAMES,
@@ -179,10 +180,11 @@ class GameView(BaseView):
         self._update_player_animation(delta_time)
 
         if self._jump_pressed and self.physics_engine and self.physics_engine.can_jump():
-            self.player.change_y = PLAYER_JUMP_SPEED
-            self.state_manager.sound.play_sfx("jump")
-            self._jump_frames = 0
-            self._jump_active = True
+            if not self._is_blocked_above():
+                self.player.change_y = PLAYER_JUMP_SPEED
+                self.state_manager.sound.play_sfx("jump")
+                self._jump_frames = 0
+                self._jump_active = True
         self._jump_pressed = False
 
         if self._jump_active:
@@ -308,9 +310,19 @@ class GameView(BaseView):
         )
         self.particles.emitters.append(emitter)
 
+    def _is_blocked_above(self, check_distance: float = JUMP_BLOCK_CHECK_DISTANCE) -> bool:
+        original_y = self.player.center_y
+        self.player.center_y += check_distance
+        blocked_by_static = arcade.check_for_collision_with_list(
+            self.player, self.platform_list
+        )
+        blocked_by_moving = arcade.check_for_collision_with_list(
+            self.player, self.moving_platform_list
+        )
+        self.player.center_y = original_y
+        return len(blocked_by_static) > 0 or len(blocked_by_moving) > 0
+
     def _platform_under_player(self):
-        if not self.moving_platform_list:
-            return None
         if self.player.change_y > 0:
             return None
         original_y = self.player.center_y
