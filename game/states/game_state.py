@@ -30,6 +30,7 @@ class GameView(BaseView):
         self.coin_list = arcade.SpriteList()
         self.hazard_list = arcade.SpriteList()
         self.ui_button_list = arcade.SpriteList()
+        self.finish_platform_list = arcade.SpriteList()
 
         self.player = None
         self.physics_engine = None
@@ -74,6 +75,7 @@ class GameView(BaseView):
         self.coin_list.clear()
         self.hazard_list.clear()
         self.ui_button_list.clear()
+        self.finish_platform_list.clear()
 
         self.player = Player()
         self.player_list.append(self.player)
@@ -129,6 +131,7 @@ class GameView(BaseView):
         self.camera.use_world()
         self.platform_list.draw()
         self.moving_platform_list.draw()
+        self.finish_platform_list.draw()
         self.coin_list.draw()
         self.hazard_list.draw()
         self.enemy_list.draw()
@@ -255,7 +258,26 @@ class GameView(BaseView):
             self._handle_death(arcade.color.RED)
             return
 
-        if self.level_end_x and self.player.center_x >= self.level_end_x:
+        # Проверка завершения уровня - касание финишной платформы
+        if arcade.check_for_collision_with_list(self.player, self.finish_platform_list):
+            if (
+                self.level_spec
+                and self.level_spec.requires_all_coins
+                and len(self.coin_list) > 0
+            ):
+                if self._status_message != "Collect all coins to finish!":
+                    self._show_status("Collect all coins to finish!")
+                    self.state_manager.sound.play_sfx("ui")
+            else:
+                self.state_manager.set_last_score(self.score)
+                self.state_manager.update_progress(
+                    self.level_id, self.score, True, self.time_elapsed
+                )
+                self.state_manager.show_game_over(True)
+                return
+
+        # Дополнительная проверка по координатам (на случай если финишная платформа не добавлена)
+        if self.level_end_x and self.player.center_x >= self.level_end_x - 50:
             if (
                 self.level_spec
                 and self.level_spec.requires_all_coins

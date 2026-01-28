@@ -10,6 +10,7 @@ class SoundManager:
         self.sfx = {}
         self.music = None
         self.music_player = None
+        self.current_music_path = None
         self.sfx_volume = 0.5
         self.music_volume = 0.5
         self.sfx_muted = False
@@ -30,11 +31,17 @@ class SoundManager:
     def play_music(self, path: str):
         if not Path(path).exists():
             return False
+        
+        # Если эта музыка уже играет - не перезапускать
+        if self.current_music_path == path and self.music_player:
+            return True
+        
         self.stop_music()
         self.music = arcade.Sound(path)
         self.music_player = self.music.play(
             volume=self._music_effective_volume(), loop=True
         )
+        self.current_music_path = path
         return True
 
     def stop_music(self):
@@ -54,6 +61,7 @@ class SoundManager:
                 pass
             self.music_player = None
         self.music = None
+        self.current_music_path = None
 
     def set_volume(self, volume: float):
         self.set_sfx_volume(volume)

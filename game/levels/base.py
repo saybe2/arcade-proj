@@ -89,6 +89,11 @@ class LevelBuilder:
             platform.center_y = platform_spec.y
             platform.color = platform_spec.color
             platform.alpha = 255
+            
+            # Зеленые платформы - это финишные платформы
+            if platform_spec.color in (arcade.color.LIME_GREEN, arcade.color.GREEN, arcade.color.DARK_GREEN):
+                self.view.finish_platform_list.append(platform)
+            
             self.view.platform_list.append(platform)
 
         for moving_spec in spec.moving_platforms:
