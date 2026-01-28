@@ -305,7 +305,21 @@ class GameView(BaseView):
             self.player.face_direction = FaceDirection.LEFT
         elif self._move_right:
             self.player.face_direction = FaceDirection.RIGHT
+        
+        # Update animation states
         self.player.is_walking = self._move_left or self._move_right
+        
+        # Check if jumping or falling
+        if self.player.change_y > 1:
+            self.player.is_jumping = True
+            self.player.is_falling = False
+        elif self.player.change_y < -1:
+            self.player.is_jumping = False
+            self.player.is_falling = True
+        else:
+            self.player.is_jumping = False
+            self.player.is_falling = False
+        
         self.player.update_animation(delta_time)
 
     def _show_status(self, message: str, duration: float = 2.0):

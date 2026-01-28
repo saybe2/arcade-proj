@@ -6,3 +6,8 @@ Points.txt
 .venv/
 data/*.json
 .vscode/
+QUICK_LEVEL_GUIDE.md
+LEVEL_CREATION_GUIDE.md
+TMX_FEATURE_SUMMARY.md
+levels/README.md
+levels/tmx/README.md

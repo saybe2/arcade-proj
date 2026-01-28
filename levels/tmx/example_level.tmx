@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="100" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="15">
+ <properties>
+  <property name="gravity" type="float" value="1"/>
+  <property name="level_id" type="int" value="4"/>
+  <property name="requires_all_coins" type="bool" value="false"/>
+  <property name="time_limit" type="float" value="120"/>
+ </properties>
+ <objectgroup id="1" name="Spawn">
+  <object id="1" x="100" y="150">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="2" name="Platforms">
+  <object id="2" x="0" y="20" width="2400" height="40">
+   <properties>
+    <property name="color" value="#2F4F4F"/>
+    <property name="height" type="int" value="40"/>
+    <property name="width" type="int" value="2400"/>
+   </properties>
+  </object>
+  <object id="3" x="300" y="140" width="120" height="24">
+   <properties>
+    <property name="color" value="#778899"/>
+    <property name="height" type="int" value="24"/>
+    <property name="width" type="int" value="120"/>
+   </properties>
+  </object>
+  <object id="4" x="520" y="220" width="120" height="24">
+   <properties>
+    <property name="color" value="#778899"/>
+    <property name="height" type="int" value="24"/>
+    <property name="width" type="int" value="120"/>
+   </properties>
+  </object>
+  <object id="5" x="2100" y="140" width="80" height="24">
+   <properties>
+    <property name="color" value="#00FF00"/>
+    <property name="height" type="int" value="24"/>
+    <property name="width" type="int" value="80"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="3" name="MovingPlatforms">
+  <object id="6" x="1120" y="320" width="100" height="20">
+   <properties>
+    <property name="boundary_left" type="float" value="1040"/>
+    <property name="boundary_right" type="float" value="1320"/>
+    <property name="change_x" type="float" value="1.5"/>
+    <property name="change_y" type="float" value="0"/>
+    <property name="color" value="#2E8B57"/>
+    <property name="height" type="int" value="20"/>
+    <property name="width" type="int" value="100"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="4" name="Coins">
+  <object id="7" x="300" y="180">
+   <point/>
+  </object>
+  <object id="8" x="520" y="260">
+   <point/>
+  </object>
+  <object id="9" x="1120" y="360">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="5" name="Hazards">
+  <object id="10" x="620" y="60" width="32" height="32">
+   <properties>
+    <property name="color" value="#8B0000"/>
+    <property name="damage" type="int" value="10"/>
+    <property name="height" type="int" value="32"/>
+    <property name="width" type="int" value="32"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="6" name="Enemies">
+  <object id="11" x="300" y="180">
+   <properties>
+    <property name="left_bound" type="float" value="260"/>
+    <property name="right_bound" type="float" value="440"/>
+    <property name="speed" type="float" value="2"/>
+    <property name="type" value="patrol"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="12" x="980" y="260">
+   <properties>
+    <property name="interval_max" type="float" value="2"/>
+    <property name="interval_min" type="float" value="1"/>
+    <property name="jump_strength" type="float" value="12"/>
+    <property name="type" value="jumping"/>
+   </properties>
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="7" name="Finish">
+  <object id="14" x="2100" y="140">
+   <point/>
+  </object>
+ </objectgroup>
+</map>
