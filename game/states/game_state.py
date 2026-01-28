@@ -31,6 +31,12 @@ class GameView(BaseView):
         self.hazard_list = arcade.SpriteList()
         self.ui_button_list = arcade.SpriteList()
         self.finish_platform_list = arcade.SpriteList()
+        
+        # Visual tile layers from TMX
+        self.background_layer = None
+        self.ground_layer = None
+        self.decorations_layer = None
+        self.collision_layer = None  # Visual collision layer for debugging
 
         self.player = None
         self.physics_engine = None
@@ -106,6 +112,14 @@ class GameView(BaseView):
 
         builder = LevelBuilder(self)
         builder.build(spec)
+        
+        # Load visual tile layers if available
+        if hasattr(spec, 'visual_layers') and spec.visual_layers:
+            self.background_layer = spec.visual_layers.get("Background")
+            self.ground_layer = spec.visual_layers.get("Ground")
+            self.decorations_layer = spec.visual_layers.get("Decorations")
+            self.collision_layer = spec.visual_layers.get("Collision")
+            print(f"Loaded {len(spec.visual_layers)} visual layers")
 
         gravity = getattr(spec, "gravity_constant", GRAVITY)
         self.physics_engine = arcade.PhysicsEnginePlatformer(
@@ -129,6 +143,14 @@ class GameView(BaseView):
     def on_draw(self):
         self.clear()
         self.camera.use_world()
+        
+        # Draw visual tile layers (background to foreground)
+        if self.background_layer:
+            self.background_layer.draw()
+        if self.ground_layer:
+            self.ground_layer.draw()
+        
+        # Draw game objects
         self.platform_list.draw()
         self.moving_platform_list.draw()
         self.finish_platform_list.draw()
@@ -137,6 +159,14 @@ class GameView(BaseView):
         self.enemy_list.draw()
         self.player_list.draw()
         self.particles.draw()
+        
+        # Draw decorations on top
+        if self.decorations_layer:
+            self.decorations_layer.draw()
+        
+        # Debug: draw collision layer (uncomment to see collision tiles)
+        # if self.collision_layer:
+        #     self.collision_layer.draw()
 
         self.camera.use_hud()
         self.hud.score = self.score

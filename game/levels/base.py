@@ -69,6 +69,7 @@ class LevelSpec:
     gravity_constant: float = GRAVITY
     requires_all_coins: bool = False
     time_limit: Optional[float] = None
+    visual_layers: dict = field(default_factory=dict)  # Tile layers for visuals
 
 
 class LevelBuilder:

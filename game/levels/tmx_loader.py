@@ -3,6 +3,8 @@ TMX Level Loader for Tiled Map Editor files.
 
 This module loads levels created in Tiled Map Editor (.tmx files)
 and converts them to LevelSpec objects that the game can use.
+
+Supports both Tile Layers (for visuals) and Object Layers (for game logic).
 """
 
 from __future__ import annotations
@@ -34,10 +36,15 @@ class TMXLevelLoader:
         """
         self.tmx_path = tmx_path
         self.tile_map = None
+        self.visual_layers = {}  # Store visual tile layers
 
     def load(self) -> Optional[LevelSpec]:
         """
         Load a level from a .tmx file.
+
+        Supports:
+        - Tile Layers: Background, Ground, Decorations, Collision (visual)
+        - Object Layers: Spawn, Platforms, MovingPlatforms, Coins, Hazards, Enemies, Finish
 
         Returns:
             LevelSpec object or None if loading failed
@@ -59,13 +66,16 @@ class TMXLevelLoader:
             # Extract spawn point
             spawn_point = self._extract_spawn_point()
 
-            # Extract game objects from layers
+            # Extract game objects from OBJECT layers
             platforms = self._extract_platforms()
             moving_platforms = self._extract_moving_platforms()
             coins = self._extract_coins()
             hazards = self._extract_hazards()
             enemies = self._extract_enemies()
             end_x = self._extract_end_x()
+
+            # Extract visual TILE layers
+            self._extract_visual_layers()
 
             # Create LevelSpec
             level_spec = LevelSpec(
@@ -83,11 +93,35 @@ class TMXLevelLoader:
                 time_limit=time_limit,
             )
 
+            # Attach visual layers to level spec
+            level_spec.visual_layers = self.visual_layers
+
             return level_spec
 
         except Exception as e:
             print(f"Error loading TMX file: {e}")
+            import traceback
+            traceback.print_exc()
             return None
+
+    def _extract_visual_layers(self):
+        """Extract visual tile layers for rendering."""
+        if not self.tile_map or not hasattr(self.tile_map, 'sprite_lists'):
+            return
+
+        # Common visual layer names
+        visual_layer_names = [
+            "Background",
+            "Ground", 
+            "Decorations",
+            "Foreground",
+            "Collision"  # Visual collision layer (for debugging)
+        ]
+
+        for layer_name in visual_layer_names:
+            if layer_name in self.tile_map.sprite_lists:
+                self.visual_layers[layer_name] = self.tile_map.sprite_lists[layer_name]
+                print(f"Loaded visual layer: {layer_name}")
 
     def _get_property(self, name: str, default, prop_type=str):
         """Get a property from the tile map."""
@@ -104,7 +138,7 @@ class TMXLevelLoader:
             return default
 
     def _extract_spawn_point(self) -> tuple[float, float]:
-        """Extract player spawn point from Spawn layer."""
+        """Extract player spawn point from Spawn object layer."""
         if not self.tile_map:
             return (100, 150)
 
@@ -117,7 +151,7 @@ class TMXLevelLoader:
         return (100, 150)
 
     def _extract_platforms(self) -> list[PlatformSpec]:
-        """Extract static platforms from Platforms layer."""
+        """Extract static platforms from Platforms object layer."""
         platforms = []
 
         if not self.tile_map:
@@ -144,7 +178,7 @@ class TMXLevelLoader:
         return platforms
 
     def _extract_moving_platforms(self) -> list[MovingPlatformSpec]:
-        """Extract moving platforms from MovingPlatforms layer."""
+        """Extract moving platforms from MovingPlatforms object layer."""
         moving_platforms = []
 
         if not self.tile_map:
@@ -196,7 +230,7 @@ class TMXLevelLoader:
         return moving_platforms
 
     def _extract_coins(self) -> list[CoinSpec]:
-        """Extract coins from Coins layer."""
+        """Extract coins from Coins object layer."""
         coins = []
 
         if not self.tile_map:
@@ -213,7 +247,7 @@ class TMXLevelLoader:
         return coins
 
     def _extract_hazards(self) -> list[HazardSpec]:
-        """Extract hazards from Hazards layer."""
+        """Extract hazards from Hazards object layer."""
         hazards = []
 
         if not self.tile_map:
@@ -240,7 +274,7 @@ class TMXLevelLoader:
         return hazards
 
     def _extract_enemies(self) -> list[EnemySpec]:
-        """Extract enemies from Enemies layer."""
+        """Extract enemies from Enemies object layer."""
         enemies = []
 
         if not self.tile_map:
@@ -282,11 +316,12 @@ class TMXLevelLoader:
         return enemies
 
     def _extract_end_x(self) -> float:
-        """Extract level end position from Finish layer."""
+        """Extract level end position from Finish/Exit object layer."""
         if not self.tile_map:
             return 0.0
 
-        finish_layer = self.tile_map.object_lists.get("Finish")
+        # Try both "Finish" and "Exit" layer names
+        finish_layer = self.tile_map.object_lists.get("Finish") or self.tile_map.object_lists.get("Exit")
         if finish_layer and len(finish_layer) > 0:
             finish_obj = finish_layer[0]
             return finish_obj.shape[0]
